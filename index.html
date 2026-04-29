@@ -3,164 +3,209 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Render Dataset Multi Elemen</title>
+  <title>Data ke Multi Elemen</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 30px;
-      background: #f5f5f5;
+      background: #fff;
     }
-    h1 { text-align: center; }
-    h2 { font-size: 18px; margin-top: 30px; }
+    h1 { font-size: 20px; }
+
+    .row {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .box {
+      flex: 1;
+      min-width: 250px;
+      border: 2px solid #333;
+      padding: 15px;
+    }
+    .box h3 {
+      margin: 0 0 10px 0;
+      font-size: 16px;
+      background: #333;
+      color: #fff;
+      padding: 5px 10px;
+    }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      background: #fff;
-      margin-bottom: 20px;
     }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: left;
+    td, th {
+      border: 1px solid #999;
+      padding: 5px;
     }
-    th { background: #007BFF; color: #fff; }
+    th { background: #ddd; }
 
-    ul {
-      background: #fff;
-      padding: 15px 30px;
-      margin-bottom: 20px;
+    ol {
+      margin: 0;
+      padding-left: 20px;
     }
 
     .card {
-      background: #fff;
-      padding: 10px;
+      border: 1px solid #999;
+      padding: 8px;
       margin-bottom: 5px;
-      border-left: 4px solid #007BFF;
+      font-size: 14px;
     }
 
-    select {
-      padding: 6px 12px;
-      margin-bottom: 20px;
-      font-size: 14px;
+    button {
+      margin: 5px;
+      padding: 5px 12px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
 
-  <h1>Render Dataset ke Banyak Elemen</h1>
+  <h1>📦 Satu Data, Banyak Tampilan</h1>
 
-  <!-- REVERSIBLE: Tinggal pilih sumber data -->
-  <label>Pilih Sumber Data: </label>
-  <select id="sourceSelect" onchange="gantiSumber()">
-    <option value="lokal">Data Lokal</option>
-    <option value="api">Data API (JSONPlaceholder)</option>
-  </select>
+  <!-- Tombol ganti tema (SCALABLE) -->
+  <div>
+    <button onclick="tampilkanSemua()">Tampilkan Semua</button>
+    <button onclick="tampilkanYangAktif()">Hanya Aktif</button>
+    <button onclick="tampilkanYangNonaktif()">Hanya Nonaktif</button>
+    <span id="infoFilter" style="margin-left:10px;color:#666;"></span>
+  </div>
 
-  <h2>📋 Tabel 1</h2>
-  <table>
-    <thead>
-      <tr><th>ID</th><th>Nama</th><th>Email</th></tr>
-    </thead>
-    <tbody id="table1"></tbody>
-  </table>
+  <br>
 
-  <h2>📋 Tabel 2 (Nomor Urut)</h2>
-  <table>
-    <thead>
-      <tr><th>No</th><th>Nama</th><th>Email</th></tr>
-    </thead>
-    <tbody id="table2"></tbody>
-  </table>
+  <!-- 4 render area (MODULAR) -->
+  <div class="row">
 
-  <h2>📝 List</h2>
-  <ul id="list"></ul>
+    <!-- Hasil 1: Tabel Vertikal -->
+    <div class="box">
+      <h3>Tabel Detail</h3>
+      <div id="render1"></div>
+    </div>
 
-  <h2>🃏 Cards</h2>
-  <div id="cards"></div>
+    <!-- Hasil 2: Tabel Horizontal (per orang) -->
+    <div class="box">
+      <h3>Tabel Per Orang</h3>
+      <div id="render2"></div>
+    </div>
+
+    <!-- Hasil 3: Ordered List -->
+    <div class="box">
+      <h3>List Bernomor</h3>
+      <div id="render3"></div>
+    </div>
+
+    <!-- Hasil 4: Paragraf -->
+    <div class="box">
+      <h3>Paragraf</h3>
+      <div id="render4"></div>
+    </div>
+
+  </div>
+
+  <p style="margin-top:20px;font-size:12px;color:#999;">
+    * Data bisa diubah dari <code>dataUtama</code> tanpa ganti kode render
+  </p>
 
   <script>
     // ==========================================
-    // DATA SOURCE (REVERSIBLE)
+    // DATA UTAMA (REVERSIBLE — ganti isinya bebas)
     // ==========================================
-    const dataLokal = [
-      { id: 1, nama: "Ahmad", email: "ahmad@email.com" },
-      { id: 2, nama: "Siti", email: "siti@email.com" },
-      { id: 3, nama: "Budi", email: "budi@email.com" },
-      { id: 4, nama: "Dewi", email: "dewi@email.com" },
+    const dataUtama = [
+      { kode: "A1", nama: "Rudi",   umur: 25, status: "aktif" },
+      { kode: "B2", nama: "Ani",    umur: 30, status: "aktif" },
+      { kode: "C3", nama: "Dodi",   umur: 22, status: "nonaktif" },
+      { kode: "D4", nama: "Lina",   umur: 28, status: "aktif" },
+      { kode: "E5", nama: "Tono",   umur: 35, status: "nonaktif" },
     ];
 
-    async function ambilData(sumber) {
-      if (sumber === "lokal") {
-        return dataLokal;
-      } else {
-        // Mapping dari API ke struktur yang sama
-        const res = await fetch("https://jsonplaceholder.typicode.com/users");
-        const data = await res.json();
-        return data.map(u => ({
-          id: u.id,
-          nama: u.name,
-          email: u.email,
-        }));
-      }
+    // Data yang sedang ditampilkan (bisa difilter)
+    let dataTampil = [...dataUtama];
+
+    // ==========================================
+    // RENDER FUNCTION (DRY — 1 fungsi jalankan 4)
+    // ==========================================
+    function renderSemua(arr) {
+      render1(arr);
+      render2(arr);
+      render3(arr);
+      render4(arr);
+      document.getElementById("infoFilter").textContent = 
+        `(Menampilkan ${arr.length} dari ${dataUtama.length} data)`;
     }
 
     // ==========================================
-    // RENDER SEMUA (DRY — 1 fungsi panggil semua)
+    // 4 CARA RENDER BERBEDA (MODULAR)
     // ==========================================
-    function renderSemua(data) {
-      renderTabel1(data);
-      renderTabel2(data);
-      renderList(data);
-      renderCards(data);
+    function render1(arr) {
+      // Tabel 2 kolom: label - nilai
+      let html = "<table>";
+      arr.forEach((orang) => {
+        html += `
+          <tr><td colspan='2' style='background:#eee;'><b>${orang.kode}</b></td></tr>
+          <tr><td>Nama</td><td>${orang.nama}</td></tr>
+          <tr><td>Umur</td><td>${orang.umur}</td></tr>
+          <tr><td>Status</td><td>${orang.status}</td></tr>
+        `;
+      });
+      html += "</table>";
+      document.getElementById("render1").innerHTML = html;
+    }
+
+    function render2(arr) {
+      // Tabel normal: 1 baris per orang
+      let html = `
+        <table>
+          <tr><th>Kode</th><th>Nama</th><th>Umur</th></tr>
+      `;
+      arr.forEach((orang) => {
+        html += `<tr><td>${orang.kode}</td><td>${orang.nama}</td><td>${orang.umur}</td></tr>`;
+      });
+      html += "</table>";
+      document.getElementById("render2").innerHTML = html;
+    }
+
+    function render3(arr) {
+      // Ordered list
+      let html = "<ol>";
+      arr.forEach((orang) => {
+        html += `<li>${orang.nama} — ${orang.umur} tahun (${orang.status})</li>`;
+      });
+      html += "</ol>";
+      document.getElementById("render3").innerHTML = html;
+    }
+
+    function render4(arr) {
+      // Paragraf teks
+      let html = "";
+      arr.forEach((orang, i) => {
+        html += `<p><b>${i + 1}.</b> ${orang.nama} adalah seorang yang berumur ${orang.umur} tahun dan statusnya <u>${orang.status}</u>.</p>`;
+      });
+      document.getElementById("render4").innerHTML = html;
     }
 
     // ==========================================
-    // RENDER MASING-MASING (MODULAR)
+    // FILTER (SCALABLE)
     // ==========================================
-    function renderTabel1(data) {
-      document.getElementById("table1").innerHTML = data
-        .map(u => `<tr><td>${u.id}</td><td>${u.nama}</td><td>${u.email}</td></tr>`)
-        .join("");
+    function tampilkanSemua() {
+      dataTampil = [...dataUtama];
+      renderSemua(dataTampil);
     }
 
-    function renderTabel2(data) {
-      document.getElementById("table2").innerHTML = data
-        .map((u, i) => `<tr><td>${i + 1}</td><td>${u.nama}</td><td>${u.email}</td></tr>`)
-        .join("");
+    function tampilkanYangAktif() {
+      dataTampil = dataUtama.filter((o) => o.status === "aktif");
+      renderSemua(dataTampil);
     }
 
-    function renderList(data) {
-      document.getElementById("list").innerHTML = data
-        .map(u => `<li>${u.id} - ${u.nama} (${u.email})</li>`)
-        .join("");
-    }
-
-    function renderCards(data) {
-      document.getElementById("cards").innerHTML = data
-        .map(u => `
-          <div class="card">
-            <strong>ID:</strong> ${u.id}<br>
-            <strong>Nama:</strong> ${u.nama}<br>
-            <strong>Email:</strong> ${u.email}
-          </div>
-        `)
-        .join("");
+    function tampilkanYangNonaktif() {
+      dataTampil = dataUtama.filter((o) => o.status === "nonaktif");
+      renderSemua(dataTampil);
     }
 
     // ==========================================
-    // GANTI SUMBER DATA (REVERSIBLE)
+    // INIT
     // ==========================================
-    async function gantiSumber() {
-      const sumber = document.getElementById("sourceSelect").value;
-      const data = await ambilData(sumber);
-      renderSemua(data);
-    }
-
-    // ==========================================
-    // INIT (JALAN PERTAMA KALI)
-    // ==========================================
-    renderSemua(dataLokal);
+    renderSemua(dataTampil);
   </script>
 
 </body>

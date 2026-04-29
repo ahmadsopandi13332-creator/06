@@ -3,661 +3,164 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dataset Multi Render — DRY, Reversible, Modular, Scalable</title>
+  <title>Render Dataset Multi Elemen</title>
   <style>
-    :root {
-      --primary: #2563eb;
-      --primary-dark: #1d4ed8;
-      --bg: #f8fafc;
-      --card-bg: #ffffff;
-      --text: #0f172a;
-      --muted: #64748b;
-      --border: #e2e8f0;
-      --radius: 12px;
-      --shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
     body {
-      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      padding: 40px 20px;
+      font-family: Arial, sans-serif;
+      margin: 30px;
+      background: #f5f5f5;
     }
+    h1 { text-align: center; }
+    h2 { font-size: 18px; margin-top: 30px; }
 
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 10px;
-      font-size: 2rem;
-    }
-
-    .subtitle {
-      text-align: center;
-      color: var(--muted);
-      margin-bottom: 30px;
-    }
-
-    /* ===== TOOLBAR (Scalable) ===== */
-    .toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 30px;
-      justify-content: center;
-    }
-
-    .search-box {
-      flex: 1;
-      min-width: 200px;
-      max-width: 400px;
-      padding: 12px 16px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      font-size: 1rem;
-      background: var(--card-bg);
-    }
-
-    .btn {
-      padding: 12px 24px;
-      border: none;
-      border-radius: var(--radius);
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 0.95rem;
-      transition: all 0.2s;
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-    }
-
-    .btn.active {
-      background: var(--primary);
-      color: white;
-      border-color: var(--primary);
-    }
-
-    .btn:hover {
-      transform: translateY(-1px);
-      box-shadow: var(--shadow);
-    }
-
-    .data-source-indicator {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 16px;
-      background: var(--card-bg);
-      border-radius: 999px;
-      font-size: 0.85rem;
-      color: var(--muted);
-      border: 1px solid var(--border);
-    }
-
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-    }
-
-    .dot.local { background: #22c55e; }
-    .dot.api { background: #f59e0b; }
-
-    /* ===== GRID LAYOUT (Modular) ===== */
-    .render-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-      gap: 24px;
-    }
-
-    .render-section {
-      background: var(--card-bg);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .section-header {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .section-title {
-      font-weight: 700;
-      font-size: 1rem;
-    }
-
-    .section-badge {
-      font-size: 0.75rem;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: #eff6ff;
-      color: var(--primary);
-    }
-
-    .section-body {
-      padding: 16px 20px;
-      max-height: 400px;
-      overflow-y: auto;
-    }
-
-    /* ===== TABLE STYLES ===== */
     table {
       width: 100%;
       border-collapse: collapse;
+      background: #fff;
+      margin-bottom: 20px;
     }
-
-    th {
-      background: var(--primary);
-      color: white;
-      padding: 12px;
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
       text-align: left;
-      font-size: 0.85rem;
-      font-weight: 600;
+    }
+    th { background: #007BFF; color: #fff; }
+
+    ul {
+      background: #fff;
+      padding: 15px 30px;
+      margin-bottom: 20px;
     }
 
-    td {
-      padding: 12px;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.9rem;
+    .card {
+      background: #fff;
+      padding: 10px;
+      margin-bottom: 5px;
+      border-left: 4px solid #007BFF;
     }
 
-    tr:hover td {
-      background: #f1f5f9;
-    }
-
-    /* ===== LIST STYLES ===== */
-    .styled-list {
-      list-style: none;
-    }
-
-    .styled-list li {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .list-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: var(--primary);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 0.85rem;
-      flex-shrink: 0;
-    }
-
-    /* ===== CARD STYLES ===== */
-    .card-item {
-      padding: 16px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      margin-bottom: 10px;
-    }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 8px;
-    }
-
-    .card-id {
-      font-size: 0.8rem;
-      color: var(--muted);
-    }
-
-    .card-name {
-      font-weight: 700;
-      font-size: 1.1rem;
-    }
-
-    .card-bar {
-      height: 6px;
-      background: #e2e8f0;
-      border-radius: 3px;
-      margin-top: 8px;
-      overflow: hidden;
-    }
-
-    .card-bar-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #2563eb, #7c3aed);
-      border-radius: 3px;
-      transition: width 0.5s;
-    }
-
-    /* ===== EMPTY STATE ===== */
-    .empty-state {
-      text-align: center;
-      padding: 40px;
-      color: var(--muted);
-    }
-
-    /* ===== PAGINATION ===== */
-    .pagination {
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-      margin-top: 20px;
-    }
-
-    .page-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: var(--card-bg);
-      cursor: pointer;
-      font-weight: 600;
-    }
-
-    .page-btn.active {
-      background: var(--primary);
-      color: white;
-      border-color: var(--primary);
+    select {
+      padding: 6px 12px;
+      margin-bottom: 20px;
+      font-size: 14px;
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <h1>📊 Dataset Multi Render</h1>
-    <p class="subtitle">Satu dataset, banyak output — DRY, Reversible, Modular, Scalable</p>
+  <h1>Render Dataset ke Banyak Elemen</h1>
 
-    <!-- TOOLBAR (Scalable Features) -->
-    <div class="toolbar">
-      <input 
-        type="text" 
-        class="search-box" 
-        placeholder="🔍 Cari user..." 
-        id="searchInput"
-        oninput="handleSearch()"
-      >
-      <button class="btn active" data-source="local" onclick="switchDataSource('local')">
-        📁 Data Lokal
-      </button>
-      <button class="btn" data-source="api" onclick="switchDataSource('api')">
-        🌐 Data API
-      </button>
-      <span class="data-source-indicator" id="sourceIndicator">
-        <span class="dot local"></span> Sumber: Lokal
-      </span>
-    </div>
+  <!-- REVERSIBLE: Tinggal pilih sumber data -->
+  <label>Pilih Sumber Data: </label>
+  <select id="sourceSelect" onchange="gantiSumber()">
+    <option value="lokal">Data Lokal</option>
+    <option value="api">Data API (JSONPlaceholder)</option>
+  </select>
 
-    <!-- RENDER GRID (Modular Sections) -->
-    <div class="render-grid">
+  <h2>📋 Tabel 1</h2>
+  <table>
+    <thead>
+      <tr><th>ID</th><th>Nama</th><th>Email</th></tr>
+    </thead>
+    <tbody id="table1"></tbody>
+  </table>
 
-      <!-- TABLE 1 -->
-      <div class="render-section">
-        <div class="section-header">
-          <span class="section-title">📋 Tabel Standar</span>
-          <span class="section-badge" id="count1">4 items</span>
-        </div>
-        <div class="section-body">
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Nama</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="table1"></tbody>
-          </table>
-          <div class="empty-state hidden" id="empty1">Tidak ada data ditemukan</div>
-        </div>
-      </div>
+  <h2>📋 Tabel 2 (Nomor Urut)</h2>
+  <table>
+    <thead>
+      <tr><th>No</th><th>Nama</th><th>Email</th></tr>
+    </thead>
+    <tbody id="table2"></tbody>
+  </table>
 
-      <!-- TABLE 2 -->
-      <div class="render-section">
-        <div class="section-header">
-          <span class="section-title">📋 Tabel Alternatif</span>
-          <span class="section-badge" id="count2">4 items</span>
-        </div>
-        <div class="section-body">
-          <table>
-            <thead>
-              <tr>
-                <th>No</th>
-                <th>Nama User</th>
-                <th>Role</th>
-              </tr>
-            </thead>
-            <tbody id="table2"></tbody>
-          </table>
-          <div class="empty-state hidden" id="empty2">Tidak ada data ditemukan</div>
-        </div>
-      </div>
+  <h2>📝 List</h2>
+  <ul id="list"></ul>
 
-      <!-- LIST -->
-      <div class="render-section">
-        <div class="section-header">
-          <span class="section-title">📝 List User</span>
-          <span class="section-badge" id="count3">4 items</span>
-        </div>
-        <div class="section-body">
-          <ul class="styled-list" id="list"></ul>
-          <div class="empty-state hidden" id="empty3">Tidak ada data ditemukan</div>
-        </div>
-      </div>
-
-      <!-- CARDS -->
-      <div class="render-section">
-        <div class="section-header">
-          <span class="section-title">🃏 Card User</span>
-          <span class="section-badge" id="count4">4 items</span>
-        </div>
-        <div class="section-body" id="cards"></div>
-      </div>
-
-    </div>
-
-    <!-- PAGINATION (Scalable) -->
-    <div class="pagination" id="pagination"></div>
-  </div>
+  <h2>🃏 Cards</h2>
+  <div id="cards"></div>
 
   <script>
     // ==========================================
-    // DATA SOURCE (REVERSIBLE — Easy to switch)
+    // DATA SOURCE (REVERSIBLE)
     // ==========================================
-    
-    const LOCAL_DATA = [
-      { id: 1, nama: "Ahmad Fauzi", role: "Admin", status: "Active" },
-      { id: 2, nama: "Siti Nurhaliza", role: "Editor", status: "Active" },
-      { id: 3, nama: "Budi Santoso", role: "Viewer", status: "Inactive" },
-      { id: 4, nama: "Dewi Lestari", role: "Admin", status: "Active" },
-      { id: 5, nama: "Eko Prasetyo", role: "Editor", status: "Active" },
-      { id: 6, nama: "Fitri Handayani", role: "Viewer", status: "Inactive" },
-      { id: 7, nama: "Gunawan Wibisono", role: "Admin", status: "Active" },
-      { id: 8, nama: "Hana Pertiwi", role: "Editor", status: "Active" },
+    const dataLokal = [
+      { id: 1, nama: "Ahmad", email: "ahmad@email.com" },
+      { id: 2, nama: "Siti", email: "siti@email.com" },
+      { id: 3, nama: "Budi", email: "budi@email.com" },
+      { id: 4, nama: "Dewi", email: "dewi@email.com" },
     ];
 
-    const API_URL = 'https://jsonplaceholder.typicode.com/users';
-
-    // State
-    let currentDataSource = 'local';
-    let currentData = [...LOCAL_DATA];
-    let searchQuery = '';
-    let currentPage = 1;
-    const itemsPerPage = 4;
-
-    // ==========================================
-    // DATA FETCHER (Reversible)
-    // ==========================================
-    async function fetchData(source) {
-      if (source === 'local') {
-        // Simulasi mapping data lokal
-        return LOCAL_DATA.map(u => ({
+    async function ambilData(sumber) {
+      if (sumber === "lokal") {
+        return dataLokal;
+      } else {
+        // Mapping dari API ke struktur yang sama
+        const res = await fetch("https://jsonplaceholder.typicode.com/users");
+        const data = await res.json();
+        return data.map(u => ({
           id: u.id,
-          nama: u.nama,
-          role: u.role,
-          status: u.status,
+          nama: u.name,
+          email: u.email,
         }));
-      } else {
-        // Fetch dari API + mapping struktur
-        try {
-          const res = await fetch(API_URL);
-          const apiUsers = await res.json();
-          return apiUsers.map(u => ({
-            id: u.id,
-            nama: u.name,
-            role: u.company?.catchPhrase || 'User',
-            status: Math.random() > 0.3 ? 'Active' : 'Inactive',
-          }));
-        } catch (err) {
-          console.error('API fetch failed, fallback ke lokal:', err);
-          return [...LOCAL_DATA];
-        }
       }
     }
 
     // ==========================================
-    // UNIVERSAL RENDERER (DRY — Satu fungsi)
+    // RENDER SEMUA (DRY — 1 fungsi panggil semua)
     // ==========================================
-    function renderAll(data) {
-      const filtered = filterData(data, searchQuery);
-      const paginated = paginate(filtered, currentPage, itemsPerPage);
-      
-      renderTable1(paginated);
-      renderTable2(paginated);
-      renderList(paginated);
-      renderCards(paginated);
-      renderPagination(filtered.length);
-      
-      // Update counters
-      document.getElementById('count1').textContent = `${filtered.length} items`;
-      document.getElementById('count2').textContent = `${filtered.length} items`;
-      document.getElementById('count3').textContent = `${filtered.length} items`;
-      document.getElementById('count4').textContent = `${filtered.length} items`;
+    function renderSemua(data) {
+      renderTabel1(data);
+      renderTabel2(data);
+      renderList(data);
+      renderCards(data);
     }
 
     // ==========================================
-    // FILTER (Scalable)
+    // RENDER MASING-MASING (MODULAR)
     // ==========================================
-    function filterData(data, query) {
-      if (!query) return data;
-      const q = query.toLowerCase();
-      return data.filter(u => 
-        u.nama.toLowerCase().includes(q) ||
-        u.role.toLowerCase().includes(q) ||
-        u.status.toLowerCase().includes(q)
-      );
+    function renderTabel1(data) {
+      document.getElementById("table1").innerHTML = data
+        .map(u => `<tr><td>${u.id}</td><td>${u.nama}</td><td>${u.email}</td></tr>`)
+        .join("");
     }
 
-    // ==========================================
-    // PAGINATION (Scalable)
-    // ==========================================
-    function paginate(data, page, limit) {
-      const start = (page - 1) * limit;
-      return data.slice(start, start + limit);
+    function renderTabel2(data) {
+      document.getElementById("table2").innerHTML = data
+        .map((u, i) => `<tr><td>${i + 1}</td><td>${u.nama}</td><td>${u.email}</td></tr>`)
+        .join("");
     }
 
-    function renderPagination(totalItems) {
-      const totalPages = Math.ceil(totalItems / itemsPerPage);
-      const container = document.getElementById('pagination');
-      
-      if (totalPages <= 1) {
-        container.innerHTML = '';
-        return;
-      }
-
-      let html = '';
-      for (let i = 1; i <= totalPages; i++) {
-        html += `
-          <button 
-            class="page-btn ${i === currentPage ? 'active' : ''}" 
-            onclick="goToPage(${i})"
-          >
-            ${i}
-          </button>
-        `;
-      }
-      container.innerHTML = html;
+    function renderList(data) {
+      document.getElementById("list").innerHTML = data
+        .map(u => `<li>${u.id} - ${u.nama} (${u.email})</li>`)
+        .join("");
     }
 
-    function goToPage(page) {
-      currentPage = page;
-      renderAll(currentData);
-    }
-
-    // ==========================================
-    // RENDER FUNCTIONS (Modular)
-    // ==========================================
-
-    function renderTable1(users) {
-      const tbody = document.getElementById('table1');
-      const empty = document.getElementById('empty1');
-      
-      if (users.length === 0) {
-        tbody.innerHTML = '';
-        empty.classList.remove('hidden');
-        return;
-      }
-      
-      empty.classList.add('hidden');
-      tbody.innerHTML = users.map(u => `
-        <tr>
-          <td><strong>#${u.id}</strong></td>
-          <td>${escapeHTML(u.nama)}</td>
-          <td>
-            <span style="
-              padding:4px 12px;
-              border-radius:999px;
-              font-size:0.8rem;
-              background:${u.status === 'Active' ? '#dcfce7' : '#fee2e2'};
-              color:${u.status === 'Active' ? '#166534' : '#991b1b'};
-            ">
-              ${u.status}
-            </span>
-          </td>
-        </tr>
-      `).join('');
-    }
-
-    function renderTable2(users) {
-      const tbody = document.getElementById('table2');
-      const empty = document.getElementById('empty2');
-      
-      if (users.length === 0) {
-        tbody.innerHTML = '';
-        empty.classList.remove('hidden');
-        return;
-      }
-      
-      empty.classList.add('hidden');
-      tbody.innerHTML = users.map((u, i) => `
-        <tr>
-          <td>${(currentPage - 1) * itemsPerPage + i + 1}</td>
-          <td><strong>${escapeHTML(u.nama)}</strong></td>
-          <td style="color:var(--primary);font-weight:500;">${escapeHTML(u.role)}</td>
-        </tr>
-      `).join('');
-    }
-
-    function renderList(users) {
-      const list = document.getElementById('list');
-      const empty = document.getElementById('empty3');
-      
-      if (users.length === 0) {
-        list.innerHTML = '';
-        empty.classList.remove('hidden');
-        return;
-      }
-      
-      empty.classList.add('hidden');
-      list.innerHTML = users.map(u => `
-        <li>
-          <div class="list-avatar">${u.nama.charAt(0)}</div>
-          <div>
-            <strong>${escapeHTML(u.nama)}</strong>
-            <br>
-            <small style="color:var(--muted);">ID: ${u.id} · ${u.role}</small>
+    function renderCards(data) {
+      document.getElementById("cards").innerHTML = data
+        .map(u => `
+          <div class="card">
+            <strong>ID:</strong> ${u.id}<br>
+            <strong>Nama:</strong> ${u.nama}<br>
+            <strong>Email:</strong> ${u.email}
           </div>
-        </li>
-      `).join('');
-    }
-
-    function renderCards(users) {
-      const container = document.getElementById('cards');
-      
-      if (users.length === 0) {
-        container.innerHTML = '<div class="empty-state">Tidak ada data</div>';
-        return;
-      }
-      
-      container.innerHTML = users.map(u => `
-        <div class="card-item">
-          <div class="card-header">
-            <span class="card-id">User #${u.id}</span>
-            <span style="
-              font-size:0.75rem;
-              padding:2px 10px;
-              border-radius:999px;
-              background:${u.status === 'Active' ? '#dcfce7' : '#fee2e2'};
-              color:${u.status === 'Active' ? '#166534' : '#991b1b'};
-            ">
-              ${u.status}
-            </span>
-          </div>
-          <div class="card-name">${escapeHTML(u.nama)}</div>
-          <div style="color:var(--muted);font-size:0.9rem;">${escapeHTML(u.role)}</div>
-          <div class="card-bar">
-            <div class="card-bar-fill" style="width:${(u.id / 10) * 100}%;"></div>
-          </div>
-        </div>
-      `).join('');
+        `)
+        .join("");
     }
 
     // ==========================================
-    // UTILITY (DRY)
+    // GANTI SUMBER DATA (REVERSIBLE)
     // ==========================================
-    function escapeHTML(str) {
-      const div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
-    }
-
-    function handleSearch() {
-      searchQuery = document.getElementById('searchInput').value;
-      currentPage = 1;
-      renderAll(currentData);
-    }
-
-    async function switchDataSource(source) {
-      currentDataSource = source;
-      currentPage = 1;
-      searchQuery = '';
-      document.getElementById('searchInput').value = '';
-
-      // Update button states
-      document.querySelectorAll('[data-source]').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.source === source);
-      });
-
-      // Update indicator
-      const indicator = document.getElementById('sourceIndicator');
-      if (source === 'local') {
-        indicator.innerHTML = '<span class="dot local"></span> Sumber: Lokal';
-      } else {
-        indicator.innerHTML = '<span class="dot api"></span> Sumber: API (Loading...)';
-      }
-
-      // Fetch & render
-      currentData = await fetchData(source);
-      
-      if (source === 'api') {
-        indicator.innerHTML = '<span class="dot api"></span> Sumber: JSONPlaceholder API';
-      }
-      
-      renderAll(currentData);
+    async function gantiSumber() {
+      const sumber = document.getElementById("sourceSelect").value;
+      const data = await ambilData(sumber);
+      renderSemua(data);
     }
 
     // ==========================================
-    // INIT (DRY — Single entry point)
+    // INIT (JALAN PERTAMA KALI)
     // ==========================================
-    document.addEventListener('DOMContentLoaded', () => {
-      renderAll(currentData);
-      console.log('✅ Dataset Multi Render siap!');
-      console.log('📊 Sumber:', currentDataSource);
-      console.log('📦 Total data:', currentData.length);
-    });
+    renderSemua(dataLokal);
   </script>
 
 </body>

@@ -1,212 +1,160 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Data ke Multi Elemen</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 30px;
-      background: #fff;
-    }
-    h1 { font-size: 20px; }
+<meta charset="UTF-8">
+<title>Table Fix Sesuai Contoh</title>
 
-    .row {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
-    .box {
-      flex: 1;
-      min-width: 250px;
-      border: 2px solid #333;
-      padding: 15px;
-    }
-    .box h3 {
-      margin: 0 0 10px 0;
-      font-size: 16px;
-      background: #333;
-      color: #fff;
-      padding: 5px 10px;
-    }
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #eee;
+    text-align: center;
+}
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    td, th {
-      border: 1px solid #999;
-      padding: 5px;
-    }
-    th { background: #ddd; }
+/* CONTAINER */
+.container {
+    width: 60%;
+    margin: 20px auto;
+}
 
-    ol {
-      margin: 0;
-      padding-left: 20px;
-    }
+/* JUDUL */
+h2 {
+    margin: 25px 0 10px;
+    font-weight: bold;
+}
 
-    .card {
-      border: 1px solid #999;
-      padding: 8px;
-      margin-bottom: 5px;
-      font-size: 14px;
-    }
+/* TABLE */
+.table-custom {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+}
 
-    button {
-      margin: 5px;
-      padding: 5px 12px;
-      cursor: pointer;
-    }
-  </style>
+/* HEADER */
+.table-custom th {
+    background: #0a7a0a; /* hijau */
+    color: white;
+    padding: 10px;
+    font-weight: bold;
+}
+
+/* BODY */
+.table-custom td {
+    padding: 10px;
+    background: #e5e5e5;
+}
+
+/* GARIS TIPIS */
+.table-custom th,
+.table-custom td {
+    border: 1px solid #999;
+}
+
+/* LIST */
+.list {
+    text-align: left;
+    margin: 0 auto 30px;
+    width: 80%;
+}
+
+.list li {
+    padding: 8px;
+    border-bottom: 1px solid #ccc;
+}
+
+/* CARD */
+.card-container {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.card {
+    width: 140px;
+    padding: 15px;
+    border-radius: 10px;
+    background: #f5f5f5;
+    box-shadow: 0 0 3px rgba(0,0,0,0.2);
+}
+
+</style>
 </head>
 <body>
 
-  <h1>📦 Satu Data, Banyak Tampilan</h1>
+<div class="container">
 
-  <!-- Tombol ganti tema (SCALABLE) -->
-  <div>
-    <button onclick="tampilkanSemua()">Tampilkan Semua</button>
-    <button onclick="tampilkanYangAktif()">Hanya Aktif</button>
-    <button onclick="tampilkanYangNonaktif()">Hanya Nonaktif</button>
-    <span id="infoFilter" style="margin-left:10px;color:#666;"></span>
-  </div>
+    <h2>TABLE 1 (Render Biasa)</h2>
+    <table class="table-custom">
+        <thead>
+            <tr><th>ID</th><th>Nama</th></tr>
+        </thead>
+        <tbody id="table1"></tbody>
+    </table>
 
-  <br>
+    <h2>TABLE 2 (DRY, REUSE, MODULAR)</h2>
+    <table class="table-custom">
+        <thead>
+            <tr><th>ID</th><th>Nama</th></tr>
+        </thead>
+        <tbody id="table2"></tbody>
+    </table>
 
-  <!-- 4 render area (MODULAR) -->
-  <div class="row">
+    <h2>LIST 1 (Dari Table 1)</h2>
+    <ul id="list1" class="list"></ul>
 
-    <!-- Hasil 1: Tabel Vertikal -->
-    <div class="box">
-      <h3>Tabel Detail</h3>
-      <div id="render1"></div>
-    </div>
+    <h2>LIST 2 (Dari Table 2)</h2>
+    <ul id="list2" class="list"></ul>
 
-    <!-- Hasil 2: Tabel Horizontal (per orang) -->
-    <div class="box">
-      <h3>Tabel Per Orang</h3>
-      <div id="render2"></div>
-    </div>
+    <h2>CARD 1 (Dari Table 1)</h2>
+    <div id="card1" class="card-container"></div>
 
-    <!-- Hasil 3: Ordered List -->
-    <div class="box">
-      <h3>List Bernomor</h3>
-      <div id="render3"></div>
-    </div>
+    <h2>CARD 2 (Dari Table 2)</h2>
+    <div id="card2" class="card-container"></div>
 
-    <!-- Hasil 4: Paragraf -->
-    <div class="box">
-      <h3>Paragraf</h3>
-      <div id="render4"></div>
-    </div>
+</div>
 
-  </div>
+<script>
 
-  <p style="margin-top:20px;font-size:12px;color:#999;">
-    * Data bisa diubah dari <code>dataUtama</code> tanpa ganti kode render
-  </p>
+// DATA
+const data = [
+    { id: 1, nama: "Reyshan" },
+    { id: 2, nama: "Adjie" },
+    { id: 3, nama: "Dimas" },
+    { id: 4, nama: "Didi" }
+];
 
-  <script>
-    // ==========================================
-    // DATA UTAMA (REVERSIBLE — ganti isinya bebas)
-    // ==========================================
-    const dataUtama = [
-      { kode: "A1", nama: "Ahmad Sopandi",   umur: 25, status: "aktif" },
-      { kode: "B2", nama: "Ahmad",    umur: 30, status: "aktif" },
-      { kode: "C3", nama: "Sopandi",   umur: 22, status: "nonaktif" },
-      { kode: "D4", nama: "Didi",   umur: 28, status: "aktif" },
-      { kode: "E5", nama: "Tono",   umur: 35, status: "nonaktif" },
-    ];
+// TEMPLATE
+const tableRow = (item) => `
+<tr>
+    <td>${item.id}</td>
+    <td>${item.nama}</td>
+</tr>`;
 
-    // Data yang sedang ditampilkan (bisa difilter)
-    let dataTampil = [...dataUtama];
+const listItem = (item) => `
+<li>${item.id} - ${item.nama}</li>`;
 
-    // ==========================================
-    // RENDER FUNCTION (DRY — 1 fungsi jalankan 4)
-    // ==========================================
-    function renderSemua(arr) {
-      render1(arr);
-      render2(arr);
-      render3(arr);
-      render4(arr);
-      document.getElementById("infoFilter").textContent = 
-        `(Menampilkan ${arr.length} dari ${dataUtama.length} data)`;
-    }
+const cardItem = (item) => `
+<div class="card">
+    <strong>${item.nama}</strong>
+    <p>ID: ${item.id}</p>
+</div>`;
 
-    // ==========================================
-    // 4 CARA RENDER BERBEDA (MODULAR)
-    // ==========================================
-    function render1(arr) {
-      // Tabel 2 kolom: label - nilai
-      let html = "<table>";
-      arr.forEach((orang) => {
-        html += `
-          <tr><td colspan='2' style='background:#eee;'><b>${orang.kode}</b></td></tr>
-          <tr><td>Nama</td><td>${orang.nama}</td></tr>
-          <tr><td>Umur</td><td>${orang.umur}</td></tr>
-          <tr><td>Status</td><td>${orang.status}</td></tr>
-        `;
-      });
-      html += "</table>";
-      document.getElementById("render1").innerHTML = html;
-    }
+// CORE RENDER (DRY)
+function render(target, template) {
+    document.getElementById(target).innerHTML =
+        data.map(template).join("");
+}
 
-    function render2(arr) {
-      // Tabel normal: 1 baris per orang
-      let html = `
-        <table>
-          <tr><th>Kode</th><th>Nama</th><th>Umur</th></tr>
-      `;
-      arr.forEach((orang) => {
-        html += `<tr><td>${orang.kode}</td><td>${orang.nama}</td><td>${orang.umur}</td></tr>`;
-      });
-      html += "</table>";
-      document.getElementById("render2").innerHTML = html;
-    }
+// INIT
+render("table1", tableRow);
+render("table2", tableRow);
+render("list1", listItem);
+render("list2", listItem);
+render("card1", cardItem);
+render("card2", cardItem);
 
-    function render3(arr) {
-      // Ordered list
-      let html = "<ol>";
-      arr.forEach((orang) => {
-        html += `<li>${orang.nama} — ${orang.umur} tahun (${orang.status})</li>`;
-      });
-      html += "</ol>";
-      document.getElementById("render3").innerHTML = html;
-    }
-
-    function render4(arr) {
-      // Paragraf teks
-      let html = "";
-      arr.forEach((orang, i) => {
-        html += `<p><b>${i + 1}.</b> ${orang.nama} adalah seorang yang berumur ${orang.umur} tahun dan statusnya <u>${orang.status}</u>.</p>`;
-      });
-      document.getElementById("render4").innerHTML = html;
-    }
-
-    // ==========================================
-    // FILTER (SCALABLE)
-    // ==========================================
-    function tampilkanSemua() {
-      dataTampil = [...dataUtama];
-      renderSemua(dataTampil);
-    }
-
-    function tampilkanYangAktif() {
-      dataTampil = dataUtama.filter((o) => o.status === "aktif");
-      renderSemua(dataTampil);
-    }
-
-    function tampilkanYangNonaktif() {
-      dataTampil = dataUtama.filter((o) => o.status === "nonaktif");
-      renderSemua(dataTampil);
-    }
-
-    // ==========================================
-    // INIT
-    // ==========================================
-    renderSemua(dataTampil);
-  </script>
+</script>
 
 </body>
 </html>
